@@ -1,45 +1,40 @@
-import React from 'react';
 import './App.css';
-import {
-  RelayEnvironmentProvider,
-  loadQuery,
-  usePreloadedQuery,
-} from 'react-relay/hooks';
-import { graphql } from 'babel-plugin-relay/macro';
+import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import RelayEnvironment from './RelayEnvironment';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import UserLoginPage from './pages/UserLoginPage';
+import UserLoginLazyPage from './pages/UserLoginLazyPage';
+import Home from './pages/Home';
 
-const { Suspense } = React;
+const routes = [
+  {
+    Component: UserLoginPage,
+    path: '/queries/user',
+  },
+  {
+    Component: UserLoginLazyPage,
+    path: '/queries/user/lazy',
+  },
+  {
+    Component: Home,
+    path: '/',
+  },
+];
 
-const RepositoryNameQuery = graphql`
-  query AppRepositoryNameQuery {
-    repository(owner: "facebook", name: "relay") {
-      name
-    }
-  }
-`;
-
-const preloadedQuery = loadQuery(RelayEnvironment, RepositoryNameQuery, {});
-
-function App({ preloadedQuery }: { preloadedQuery: any }) {
-  const data: any = usePreloadedQuery(RepositoryNameQuery, preloadedQuery);
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <p>{data.repository.name}</p>
-      </header>
-    </div>
-  );
-}
-
-function AppRoot() {
+function App() {
   return (
     <RelayEnvironmentProvider environment={RelayEnvironment}>
-      <Suspense fallback={'Loading...'}>
-        <App preloadedQuery={preloadedQuery} />
-      </Suspense>
+      <Router>
+        <Switch>
+          {routes.map(({ path, Component }) => (
+            <Route key={path} path={path} exact>
+              <Component />
+            </Route>
+          ))}
+        </Switch>
+      </Router>
     </RelayEnvironmentProvider>
   );
 }
 
-export default AppRoot;
+export default App;
